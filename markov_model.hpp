@@ -30,6 +30,8 @@
 
 class markov_model
 {
+	using word_index_t = size_t;
+
 	public:
 
 		void train(std::vector<std::string>& words)
@@ -47,7 +49,7 @@ class markov_model
 		{
 			auto next_index = random_sample(starting_words);
 
-			std::vector<size_t> indexes;
+			std::vector<word_index_t> indexes;
 
 			while (next_index != end_output)
 			{
@@ -58,18 +60,18 @@ class markov_model
 				next_index = random_sample(next_words);
 			}
 
-			return std::accumulate(std::next(indexes.begin()), indexes.end(), known_words[indexes.front()], [this](std::string& acc, size_t curr) { return acc.append(1, ' ').append(known_words[curr]); });
+			return std::accumulate(std::next(indexes.begin()), indexes.end(), known_words[indexes.front()], [this](std::string& acc, word_index_t curr) { return acc.append(1, ' ').append(known_words[curr]); });
 		}
 
 	private:
 
 		struct word_weight
 		{
-			size_t word_index;
+			word_index_t word_index;
 			int count;
 		};
 
-		const size_t end_output = -1;
+		const word_index_t end_output = -1;
 
 		std::vector<std::string> known_words;
 		std::vector<word_weight> starting_words;
@@ -77,7 +79,7 @@ class markov_model
 
 		std::mt19937_64 rand{std::random_device{}()};
 
-		size_t random_sample(const std::vector<word_weight>& vec)
+		word_index_t random_sample(const std::vector<word_weight>& vec)
 		{
 			if (vec.size() == 1) { return vec[0].word_index; }
 
@@ -97,7 +99,7 @@ class markov_model
 			return vec.back().word_index;
 		}
 
-		void add_or_increment_index(std::vector<word_weight>& follow_weight, size_t word_index)
+		void add_or_increment_index(std::vector<word_weight>& follow_weight, word_index_t word_index)
 		{
 			const auto found = std::find_if(follow_weight.begin(), follow_weight.end(), [word_index](const auto& weight)
 					{
@@ -110,9 +112,9 @@ class markov_model
 				follow_weight.push_back(word_weight{word_index, 1});
 		}
 
-		std::vector<size_t> indexify(std::vector<std::string>& words)
+		std::vector<word_index_t> indexify(std::vector<std::string>& words)
 		{
-			std::vector<size_t> word_indexes;
+			std::vector<word_index_t> word_indexes;
 			word_indexes.reserve(words.size());
 
 			bool first = true;
@@ -137,9 +139,9 @@ class markov_model
 			return word_indexes;
 		}
 
-		size_t index_of(const std::string& word)
+		word_index_t index_of(const std::string& word)
 		{
-			for (size_t i = 0; i < known_words.size(); i++)
+			for (word_index_t i = 0; i < known_words.size(); i++)
 			{
 				if (known_words[i] == word)
 					return i;
