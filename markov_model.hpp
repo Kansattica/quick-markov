@@ -16,7 +16,7 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
    compile with:
-   g++ -O3 --std=c++17 markov.cpp -o markov
+   g++ -O3 markov.cpp -o markov
  */
 
 #ifndef MARKOV_MODEL_HPP

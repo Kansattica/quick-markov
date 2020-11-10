@@ -1,7 +1,7 @@
 # quick-markov
 Cute little C++ Markov chain program.
 
-Compile with `g++ -O3 --std=c++17 markov.cpp -o markov`
+Compile with `g++ -O3 markov.cpp -o markov`
 
 The resulting executable reads from standard input. `markov < inputfile`, `someotherprogram | markov`, and running `markov` on its own, typing some input, then ctrl-D on its own line all work.
 
