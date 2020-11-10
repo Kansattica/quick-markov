@@ -19,6 +19,9 @@
    g++ -O3 --std=c++17 markov.cpp -o markov
 */
 
+#ifndef MARKOV_MODEL_HPP
+#define MARKOV_MODEL_HPP
+
 #include <vector>
 #include <random>
 #include <string>
@@ -144,3 +147,5 @@ class markov_model
 	}
 
 };
+
+#endif
