@@ -36,6 +36,7 @@ class markov_model
 
 		void train(std::vector<std::string>& words)
 		{
+			if (words.empty()) { return; }
 			const auto word_indexes = indexify(words);
 			for (size_t i = 0; i < word_indexes.size() - 1; i++)
 			{
