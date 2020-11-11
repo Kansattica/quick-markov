@@ -27,11 +27,7 @@
 
 #include "markov_model.hpp"
 
-constexpr bool is_word_boundary(char c)
-{
-	// see https://en.cppreference.com/w/cpp/string/byte/isspace
-	return std::isspace(static_cast<unsigned char>(c));
-}
+const char word_boundary = ' ';
 
 int main(int argc, char** argv)
 {
@@ -39,12 +35,13 @@ int main(int argc, char** argv)
 	markov_model model;
 	for (std::string buffer; std::getline(std::cin, buffer);)
 	{
-		auto word_start = std::find_if_not(buffer.begin(), buffer.end(), is_word_boundary);
-		while (word_start != buffer.end())
+		auto word_start = buffer.find_first_not_of(word_boundary);
+		while (word_start != std::string::npos)
 		{
-			const auto word_end = std::find_if(word_start, buffer.end(), is_word_boundary);
-			words.emplace_back(word_start, word_end);
-			word_start = std::find_if_not(word_end, buffer.end(), is_word_boundary);
+			const auto word_end = buffer.find(word_boundary, word_start);
+			words.emplace_back(buffer, word_start, word_end - word_start);
+			if (word_end == std::string::npos) { break; }
+			word_start = buffer.find_first_not_of(word_boundary, word_end);
 		} 
 		model.train(words);
 	}
