@@ -27,7 +27,7 @@
 
 #include "markov_model.hpp"
 
-constexpr bool is_word_boundary(char c)
+bool is_word_boundary(char c)
 {
 	// see https://en.cppreference.com/w/cpp/string/byte/isspace
 	return std::isspace(static_cast<unsigned char>(c));
