@@ -25,6 +25,10 @@
 #include <algorithm>
 #include <cstdlib>
 
+#ifdef MARKOV_TIMING
+#include <chrono>
+#endif
+
 #include "markov_model.hpp"
 
 bool is_word_boundary(char c)
@@ -37,6 +41,10 @@ int main(int argc, char** argv)
 {
 	std::vector<std::string> words;
 	markov_model model;
+#ifdef MARKOV_TIMING
+	size_t bytes_crunched = 0;
+	const auto start = std::chrono::high_resolution_clock::now();
+#endif
 	for (std::string buffer; std::getline(std::cin, buffer);)
 	{
 		auto word_start = std::find_if_not(buffer.begin(), buffer.end(), is_word_boundary);
@@ -47,7 +55,17 @@ int main(int argc, char** argv)
 			word_start = std::find_if_not(word_end, buffer.end(), is_word_boundary);
 		} 
 		model.train(words);
+#ifdef MARKOV_TIMING
+		bytes_crunched += buffer.size();
+		const auto end = std::chrono::high_resolution_clock::now();
+		const std::chrono::duration<double, std::milli> elapsed = end - start;
+		std::cout << "Crunched " << bytes_crunched << " bytes in " << elapsed.count() << " ms. " << bytes_crunched/elapsed.count() << " kb/sec.\r";
+#endif
 	}
+
+#ifdef MARKOV_TIMING
+	std::cout << '\n'; // leave the timing data on the screen
+#endif
 
 	const int to_generate = argc > 1 ? std::atoi(argv[1]) : 1;
 
