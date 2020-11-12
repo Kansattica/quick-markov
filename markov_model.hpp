@@ -27,6 +27,7 @@
 #include <string>
 #include <algorithm>
 #include <numeric>
+#include <iterator>
 
 class markov_model
 {
@@ -142,11 +143,11 @@ class markov_model
 
 		word_index_t index_of(const std::string& word)
 		{
-			for (word_index_t i = 0; i < known_words.size(); i++)
-			{
-				if (known_words[i] == word)
-					return i;
-			}
+			const auto word_it = std::find(known_words.begin(), known_words.end(), word);
+
+			if (word_it != known_words.end())
+				return std::distance(known_words.begin(), word_it);
+
 			return -1;
 		}
 
