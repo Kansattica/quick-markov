@@ -69,7 +69,7 @@ class markov_model
 		struct word_weight
 		{
 			word_index_t word_index;
-			int count;
+			uint_fast32_t count;
 		};
 
 		const word_index_t end_output = -1;
@@ -78,7 +78,7 @@ class markov_model
 		std::vector<word_weight> starting_words;
 		std::vector<std::vector<word_weight>> following_weights;
 
-		std::mt19937_64 rand{std::random_device{}()};
+		std::minstd_rand rand{std::random_device{}()};
 
 		word_index_t random_sample(const std::vector<word_weight>& vec)
 		{
