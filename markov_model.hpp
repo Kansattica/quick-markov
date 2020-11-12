@@ -39,11 +39,11 @@ class markov_model
 		{
 			if (words.empty()) { return; }
 			const auto word_indexes = indexify(words);
-			for (size_t i = 0; i < word_indexes.size() - 1; i++)
+			std::accumulate(word_indexes.begin() + 1, word_indexes.end(), word_indexes.front(), [this](word_index_t curr, word_index_t next)
 			{
-				add_or_increment_index(following_weights[word_indexes[i]], word_indexes[i + 1]);
-			}
-
+				add_or_increment_index(following_weights[curr], next);
+				return next;
+			});
 			add_or_increment_index(following_weights[word_indexes.back()], end_output);
 		}
 
