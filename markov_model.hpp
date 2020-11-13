@@ -91,7 +91,7 @@ class markov_model
 
 		std::minstd_rand rand{std::random_device{}()};
 
-		word_index_t random_sample(const std::vector<word_weight>& vec)
+		word_index_t random_sample(const std::vector<word_weight>& vec) 
 		{
 			if (vec.size() == 1) { return vec[0].word_index; }
 
@@ -151,7 +151,7 @@ class markov_model
 			return word_indexes;
 		}
 
-		word_index_t index_of(const std::string& word)
+		word_index_t index_of(const std::string& word) const
 		{
 			const auto word_it = std::find(MARKOV_PARALLEL_POLICY known_words.cbegin(), known_words.cend(), word);
 			return word_it == known_words.cend() ? -1 : std::distance(known_words.cbegin(), word_it);
