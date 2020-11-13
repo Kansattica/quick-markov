@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 		bytes_crunched += buffer.size();
 		const auto end = std::chrono::high_resolution_clock::now();
 		const std::chrono::duration<double, std::milli> elapsed = end - start;
-		std::cerr << "Crunched " << bytes_crunched/1000 << " kb in " << elapsed.count() << " ms. " << bytes_crunched/elapsed.count() << " kb/sec.\r";
+		std::cerr << "Crunched " << bytes_crunched/1000 << " kb in " << elapsed.count() << " ms. " << bytes_crunched/elapsed.count() << " kb/sec.   \r";
 #endif
 	}
 

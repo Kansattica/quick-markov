@@ -120,7 +120,7 @@ class markov_model
 				return weight.word_index == word_index;
 			});
 
-			if (found != follow_weight.cend())
+			if (found != follow_weight.end())
 				found->count++;
 			else
 				follow_weight.push_back(word_weight{word_index, 1});
@@ -153,7 +153,6 @@ class markov_model
 		word_index_t index_of(const std::string& word)
 		{
 			const auto word_it = std::find(MARKOV_PARALLEL_POLICY known_words.cbegin(), known_words.cend(), word);
-
 			return word_it == known_words.cend() ? -1 : std::distance(known_words.cbegin(), word_it);
 		}
 };
