@@ -59,7 +59,7 @@ class markov_model
 			add_or_increment_index(following_weights[last], end_output);
 		}
 
-		std::string generate()
+		std::string generate() const
 		{
 			auto next_index = random_sample(starting_words);
 
@@ -89,9 +89,12 @@ class markov_model
 		std::vector<word_weight> starting_words;
 		std::vector<std::vector<word_weight>> following_weights;
 
-		std::minstd_rand rand{std::random_device{}()};
+		// this is mutable so it can be used from inside random_sample and generate.
+		// if you want generate to be thread safe, put a mutex around the roll line below
+		// or give each thread its own random number generator and pass it into generate or random_sample.
+		mutable std::minstd_rand rand{std::random_device{}()};
 
-		word_index_t random_sample(const std::vector<word_weight>& vec) 
+		word_index_t random_sample(const std::vector<word_weight>& vec) const
 		{
 			if (vec.size() == 1) { return vec[0].word_index; }
 

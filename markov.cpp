@@ -72,7 +72,7 @@ markov_model train_model()
 
 int main(int argc, char** argv)
 {
-	auto model = train_model();
+	const auto model = train_model();
 
 	const int to_generate = argc > 1 ? std::atoi(argv[1]) : 1;
 
