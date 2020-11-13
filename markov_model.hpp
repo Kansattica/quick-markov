@@ -76,10 +76,11 @@ class markov_model
 
 	private:
 
+		using count_t = uint_fast32_t;
 		struct word_weight
 		{
 			word_index_t word_index;
-			uint_fast32_t count;
+			count_t count;
 		};
 
 		const word_index_t end_output = -1;
@@ -95,9 +96,9 @@ class markov_model
 			if (vec.size() == 1) { return vec[0].word_index; }
 
 #ifdef MARKOV_PARALLEL
-			const auto total_weight = std::transform_reduce(MARKOV_PARALLEL_POLICY vec.cbegin(), vec.cend(), (uint_fast32_t)0, std::plus<>{}, [](const word_weight& weight) { return weight.count; });
+			const auto total_weight = std::transform_reduce(MARKOV_PARALLEL_POLICY vec.cbegin(), vec.cend(), (count_t)0, std::plus<>{}, [](const word_weight& weight) { return weight.count; });
 #else
-			const auto total_weight = std::accumulate(vec.cbegin(), vec.cend(), 0, [](const auto acc, const auto& current) { return acc + current.count; });
+			const auto total_weight = std::accumulate(vec.cbegin(), vec.cend(), (count_t)0, [](const auto acc, const auto& current) { return acc + current.count; });
 #endif
 
 			std::uniform_int_distribution<> range(1, total_weight);
