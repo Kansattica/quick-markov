@@ -130,20 +130,20 @@ class markov_model
 
 		std::vector<word_index_t> indexify(std::vector<std::string>& words)
 		{
-			std::vector<word_index_t> word_indexes;
-			word_indexes.reserve(words.size());
+			std::vector<word_index_t> word_indexes(words.size());
 
-			for (auto&& word : words)
-			{
-				auto word_index = index_of(word);
-				if (word_index == -1)
-				{
-					known_words.push_back(std::move(word));
-					word_index = known_words.size() - 1;
-					following_weights.push_back({});
-				}
-				word_indexes.push_back(word_index);
-			}
+			std::transform(words.begin(), words.end(), word_indexes.begin(),
+				[this](std::string& word) {
+					auto word_index = index_of(word);
+					if (word_index == -1)
+					{
+						known_words.push_back(std::move(word));
+						word_index = known_words.size() - 1;
+						following_weights.push_back({});
+					}
+					return word_index;
+				});
+
 			words.clear();
 
 			add_or_increment_index(starting_words, word_indexes.front());
