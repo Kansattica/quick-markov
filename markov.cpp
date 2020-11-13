@@ -37,7 +37,7 @@ bool is_word_boundary(char c)
 	return std::isspace(static_cast<unsigned char>(c));
 }
 
-int main(int argc, char** argv)
+markov_model train_model()
 {
 	std::vector<std::string> words;
 	markov_model model;
@@ -66,6 +66,13 @@ int main(int argc, char** argv)
 #ifdef MARKOV_TIMING
 	std::cerr << '\n'; // leave the timing data on the screen
 #endif
+
+	return model;
+}
+
+int main(int argc, char** argv)
+{
+	auto model = train_model();
 
 	const int to_generate = argc > 1 ? std::atoi(argv[1]) : 1;
 
