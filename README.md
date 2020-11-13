@@ -1,6 +1,7 @@
 # quick-markov
 Cute little C++ Markov chain program.
 
+## Using the provided runner
 Compile with `g++ -O3 markov.cpp -o markov`
 
 The resulting executable reads from standard input. `markov < inputfile`, `someotherprogram | markov`, and running `markov` on its own, typing some input, then ctrl-D on its own line all work.
@@ -11,6 +12,7 @@ It treats each sequence of bytes separated by whitespace as a word and each sequ
 
 By default, it produces one line of output. Passing a number as a command line argument, like `markov 20`, will produce that many lines instead.
 
+## Using `markov_model`
 You can also use `markov_model.hpp` in your own projects. It's a class, `markov_model`, that exposes two functions: `train` and `generate`. 
 
 `train` takes a begin and end iterator pointing to `stringlike`s and adds the sequence to the model. If you would like `train` to `std::move` from the strings to conserve time and memory, simply wrap `begin` and `end` in `std::make_move_iterator`, as seen in `markov.cpp`. Each call to `train` is treated as one message. This is important because the first word is marked as a reasonable word to start a generated message on, and the last word is treated as a reasonable word to end a message on. A `stringlike` is anything that can be used to construct a `std::string` and compared to a `std::string` using `operator==`. Notably, this includes `std::string_view`. 
