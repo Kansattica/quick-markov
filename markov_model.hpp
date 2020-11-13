@@ -141,8 +141,7 @@ class markov_model
 		std::vector<word_index_t> indexify(stringlike_iterator begin, stringlike_iterator end)
 		{
 			std::vector<word_index_t> word_indexes;
-			using category = typename std::iterator_traits<stringlike_iterator>::iterator_category;
-			if IF_CONSTEXPR (std::is_convertible<category, std::random_access_iterator_tag>::value)
+			if IF_CONSTEXPR (std::is_convertible<typename std::iterator_traits<stringlike_iterator>::iterator_category, std::random_access_iterator_tag>::value)
 			{
 				// only bother reserving if we can compute std::distance in constant time
 				word_indexes.reserve(std::distance(begin, end));
@@ -157,7 +156,7 @@ class markov_model
 					{
 						known_words.emplace_back(std::forward<typename stringlike_iterator::value_type>(word));
 						word_index = known_words.size() - 1;
-						following_weights.push_back({});
+						following_weights.emplace_back();
 					}
 					return word_index;
 				});
