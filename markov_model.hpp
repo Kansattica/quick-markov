@@ -35,7 +35,7 @@
 #define MARKOV_PARALLEL_POLICY std::execution::par_unseq,
 #else
 #define MARKOV_PARALLEL_POLICY
-#endif MARKOV_PARALLEL
+#endif
 
 class markov_model
 {
