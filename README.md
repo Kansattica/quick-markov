@@ -19,4 +19,4 @@ You can also use `markov_model.hpp` in your own projects. It's a class, `markov_
 
 You can define `MARKOV_TIMING` to have the program calculate and print how fast it's processing the training data, but note that this slows down the training step quite a bit. You get more accurate measurements by having something out-of-band, like `pv` or `/usr/bin/time` do the timing. 
 
-You can also define `MARKOV_PARALLEL` to enable experimental parallel processing support when training `markov_model`. This is useful for larger corpuses (over 2000 unique words or so, always benchmark and compare to be sure). This requires a compiler and library with C++ 17 support, specifically the `<execution>` header.
+You can also define `MARKOV_PARALLEL` to enable experimental parallel processing support when training `markov_model` and generating output. This is useful for larger corpuses (over 2000 unique words or so, always benchmark and compare to be sure). This requires a compiler and library with C++ 17 support, specifically the `<execution>` header. You might have to pass the `-std=c++17` or equivalent flag to your compiler.
