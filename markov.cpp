@@ -54,7 +54,8 @@ markov_model train_model()
 			words.emplace_back(word_start, word_end);
 			word_start = std::find_if_not(word_end, buffer.cend(), is_word_boundary);
 		} 
-		model.train(words);
+		model.train(std::make_move_iterator(words.begin()), std::make_move_iterator(words.end()));
+		words.clear();
 #ifdef MARKOV_TIMING
 		bytes_crunched += buffer.size();
 		const auto end = std::chrono::high_resolution_clock::now();

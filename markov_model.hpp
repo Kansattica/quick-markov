@@ -37,17 +37,23 @@
 #define MARKOV_PARALLEL_POLICY
 #endif
 
+#if __cpp_if_constexpr == 201606
+#define IF_CONSTEXPR constexpr
+#else
+#define IF_CONSTEXPR
+#endif
+
 class markov_model
 {
 	using word_index_t = size_t;
 
 	public:
 
-		template <typename stringlike>
-		void train(std::vector<stringlike>& words)
+		template <typename stringlike_iterator>
+		void train(stringlike_iterator begin, stringlike_iterator end)
 		{
-			if (words.empty()) { return; }
-			const auto word_indexes = indexify(words);
+			if (begin == end) { return; }
+			const auto word_indexes = indexify(begin, end);
 
 			// It's not worth parallelizing this because:
 			// - word_indexes is unlikely to be long enough to get any speedup 
@@ -131,28 +137,30 @@ class markov_model
 				follow_weight.push_back(word_weight{word_index, 1});
 		}
 
-		template <typename stringlike>
-		std::vector<word_index_t> indexify(std::vector<stringlike>& words)
+		template <typename stringlike_iterator>
+		std::vector<word_index_t> indexify(stringlike_iterator begin, stringlike_iterator end)
 		{
-			std::vector<word_index_t> word_indexes(words.size());
+			std::vector<word_index_t> word_indexes;
+			using category = typename std::iterator_traits<stringlike_iterator>::iterator_category;
+			if IF_CONSTEXPR (std::is_convertible<category, std::random_access_iterator_tag>::value)
+			{
+				// only bother reserving if we can compute std::distance in constant time
+				word_indexes.reserve(std::distance(begin, end));
+			}
 
 			// Paralellizing this one looks like it gives worse performance.
 			// I suspect it's because words is rarely very long, and there's contention on the reader-writer lock you have to put on known_words.
-			std::transform(words.begin(), words.end(), word_indexes.begin(),
-				[this](stringlike& word) {
+			std::transform(begin, end, std::back_inserter(word_indexes),
+				[this](auto&& word) {
 					auto word_index = index_of(word);
 					if (word_index == -1)
 					{
-						known_words.emplace_back(std::move(word));
+						known_words.emplace_back(std::forward<typename stringlike_iterator::value_type>(word));
 						word_index = known_words.size() - 1;
 						following_weights.push_back({});
 					}
 					return word_index;
 				});
-
-#ifndef MARKOV_NO_GOBBLE_VECTOR
-			words.clear();
-#endif
 
 			add_or_increment_index(starting_words, word_indexes.front());
 			return word_indexes;
