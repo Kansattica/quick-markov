@@ -29,6 +29,16 @@
 #include <numeric>
 #include <iterator>
 
+#ifdef MARKOV_PARALLEL
+#include <execution>
+#include <functional>
+#define REDUCE std::reduce
+#define MARKOV_PARALLEL_POLICY std::execution::par_unseq,
+#else
+#define REDUCE std::accumulate
+#define MARKOV_PARALLEL_POLICY
+#endif MARKOV_PARALLEL
+
 class markov_model
 {
 	using word_index_t = size_t;
@@ -85,7 +95,11 @@ class markov_model
 		{
 			if (vec.size() == 1) { return vec[0].word_index; }
 
+#ifdef MARKOV_PARALLEL
+			const auto total_weight = std::transform_reduce(MARKOV_PARALLEL_POLICY vec.cbegin(), vec.cend(), (uint_fast32_t)0, std::plus<>{}, [](const word_weight& weight) { return weight.count; });
+#else
 			const auto total_weight = std::accumulate(vec.begin(), vec.end(), 0, [](const auto acc, const auto& current) { return acc + current.count; });
+#endif
 
 			std::uniform_int_distribution<> range(1, total_weight);
 
@@ -103,7 +117,7 @@ class markov_model
 
 		void add_or_increment_index(std::vector<word_weight>& follow_weight, word_index_t word_index)
 		{
-			const auto found = std::find_if(follow_weight.begin(), follow_weight.end(), [word_index](const auto& weight)
+			const auto found = std::find_if(MARKOV_PARALLEL_POLICY follow_weight.begin(), follow_weight.end(), [word_index](const auto& weight)
 					{
 					return weight.word_index == word_index;
 					});
@@ -143,7 +157,7 @@ class markov_model
 
 		word_index_t index_of(const std::string& word)
 		{
-			const auto word_it = std::find(known_words.begin(), known_words.end(), word);
+			const auto word_it = std::find(MARKOV_PARALLEL_POLICY known_words.begin(), known_words.end(), word);
 
 			if (word_it != known_words.end())
 				return std::distance(known_words.begin(), word_it);
