@@ -59,12 +59,12 @@ int main(int argc, char** argv)
 		bytes_crunched += buffer.size();
 		const auto end = std::chrono::high_resolution_clock::now();
 		const std::chrono::duration<double, std::milli> elapsed = end - start;
-		std::cout << "Crunched " << bytes_crunched/1000 << " kb in " << elapsed.count() << " ms. " << bytes_crunched/elapsed.count() << " kb/sec.\r";
+		std::cerr << "Crunched " << bytes_crunched/1000 << " kb in " << elapsed.count() << " ms. " << bytes_crunched/elapsed.count() << " kb/sec.\r";
 #endif
 	}
 
 #ifdef MARKOV_TIMING
-	std::cout << '\n'; // leave the timing data on the screen
+	std::cerr << '\n'; // leave the timing data on the screen
 #endif
 
 	const int to_generate = argc > 1 ? std::atoi(argv[1]) : 1;
