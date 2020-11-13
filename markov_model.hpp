@@ -116,7 +116,7 @@ class markov_model
 
 		void add_or_increment_index(std::vector<word_weight>& follow_weight, word_index_t word_index)
 		{
-			const auto found = std::find_if(MARKOV_PARALLEL_POLICY follow_weight.begin(), follow_weight.end(), [word_index](const auto &weight) {
+			const auto found = std::find_if(MARKOV_PARALLEL_POLICY follow_weight.begin(), follow_weight.end(), [word_index](const auto& weight) {
 				return weight.word_index == word_index;
 			});
 
