@@ -29,6 +29,14 @@
 #include <numeric>
 #include <iterator>
 
+#ifdef MARKOV_PARALLEL
+#include <execution>
+#include <functional>
+#define MARKOV_PARALLEL_POLICY std::execution::par_unseq,
+#else
+#define MARKOV_PARALLEL_POLICY
+#endif
+
 class markov_model
 {
 	using word_index_t = size_t;
@@ -39,12 +47,16 @@ class markov_model
 		{
 			if (words.empty()) { return; }
 			const auto word_indexes = indexify(words);
-			std::accumulate(word_indexes.begin() + 1, word_indexes.end(), word_indexes.front(), [this](word_index_t curr, word_index_t next)
+
+			// It's not worth parallelizing this because:
+			// - word_indexes is unlikely to be long enough to get any speedup 
+			// - if the same word is in the sentence twice, that creates a race condition on the following_weights for that index.
+			const auto last = std::accumulate(std::next(word_indexes.cbegin()), word_indexes.cend(), word_indexes.front(), [this](word_index_t curr, word_index_t next)
 			{
 				add_or_increment_index(following_weights[curr], next);
 				return next;
 			});
-			add_or_increment_index(following_weights[word_indexes.back()], end_output);
+			add_or_increment_index(following_weights[last], end_output);
 		}
 
 		std::string generate()
@@ -56,13 +68,10 @@ class markov_model
 			while (next_index != end_output)
 			{
 				indexes.push_back(next_index);
-				const auto& next_words = following_weights[next_index];
-				if (next_words.empty())
-					break;
-				next_index = random_sample(next_words);
+				next_index = random_sample(following_weights[next_index]);
 			}
 
-			return std::accumulate(std::next(indexes.begin()), indexes.end(), known_words[indexes.front()], [this](std::string& acc, word_index_t curr) { return acc.append(1, ' ').append(known_words[curr]); });
+			return std::accumulate(std::next(indexes.cbegin()), indexes.cend(), known_words[indexes.front()], [this](std::string& acc, word_index_t curr) { return acc.append(1, ' ').append(known_words[curr]); });
 		}
 
 	private:
@@ -85,7 +94,11 @@ class markov_model
 		{
 			if (vec.size() == 1) { return vec[0].word_index; }
 
-			const auto total_weight = std::accumulate(vec.begin(), vec.end(), 0, [](const auto acc, const auto& current) { return acc + current.count; });
+#ifdef MARKOV_PARALLEL
+			const auto total_weight = std::transform_reduce(MARKOV_PARALLEL_POLICY vec.cbegin(), vec.cend(), (uint_fast32_t)0, std::plus<>{}, [](const word_weight& weight) { return weight.count; });
+#else
+			const auto total_weight = std::accumulate(vec.cbegin(), vec.cend(), 0, [](const auto acc, const auto& current) { return acc + current.count; });
+#endif
 
 			std::uniform_int_distribution<> range(1, total_weight);
 
@@ -103,12 +116,11 @@ class markov_model
 
 		void add_or_increment_index(std::vector<word_weight>& follow_weight, word_index_t word_index)
 		{
-			const auto found = std::find_if(follow_weight.begin(), follow_weight.end(), [word_index](const auto& weight)
-					{
-					return weight.word_index == word_index;
-					});
+			const auto found = std::find_if(MARKOV_PARALLEL_POLICY follow_weight.begin(), follow_weight.end(), [word_index](const auto& weight) {
+				return weight.word_index == word_index;
+			});
 
-			if (found != follow_weight.end())
+			if (found != follow_weight.cend())
 				found->count++;
 			else
 				follow_weight.push_back(word_weight{word_index, 1});
@@ -116,20 +128,22 @@ class markov_model
 
 		std::vector<word_index_t> indexify(std::vector<std::string>& words)
 		{
-			std::vector<word_index_t> word_indexes;
-			word_indexes.reserve(words.size());
+			std::vector<word_index_t> word_indexes(words.size());
 
-			for (auto&& word : words)
-			{
-				auto word_index = index_of(word);
-				if (word_index == -1)
-				{
-					known_words.push_back(std::move(word));
-					word_index = known_words.size() - 1;
-					following_weights.push_back({});
-				}
-				word_indexes.push_back(word_index);
-			}
+			// Paralellizing this one looks like it gives worse performance.
+			// I suspect it's because words is rarely very long, and there's contention on the reader-writer lock you have to put on known_words.
+			std::transform(words.begin(), words.end(), word_indexes.begin(),
+				[this](std::string& word) {
+					auto word_index = index_of(word);
+					if (word_index == -1)
+					{
+						known_words.push_back(std::move(word));
+						word_index = known_words.size() - 1;
+						following_weights.push_back({});
+					}
+					return word_index;
+				});
+
 			words.clear();
 
 			add_or_increment_index(starting_words, word_indexes.front());
@@ -138,14 +152,10 @@ class markov_model
 
 		word_index_t index_of(const std::string& word)
 		{
-			const auto word_it = std::find(known_words.begin(), known_words.end(), word);
+			const auto word_it = std::find(MARKOV_PARALLEL_POLICY known_words.cbegin(), known_words.cend(), word);
 
-			if (word_it != known_words.end())
-				return std::distance(known_words.begin(), word_it);
-
-			return -1;
+			return word_it == known_words.cend() ? -1 : std::distance(known_words.cbegin(), word_it);
 		}
-
 };
 
 #endif
