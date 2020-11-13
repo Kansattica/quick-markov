@@ -17,6 +17,6 @@ You can also use `markov_model.hpp` in your own projects. It's a class, `markov_
 
 `generate` uses the trained model to produce a `std::string`. Note that you can freely intermix calls to `train` and `generate`- there's no intermediate step to "finalize" a model.
 
-You can define `MARKOV_TIMING` to have the program calculate and print how fast it's processing the training data, but note that this slows down the training step quite a bit. You get more accurate measurements by having something out-of-band, like `pv` or `/usr/bin/time` or some such time it. 
+You can define `MARKOV_TIMING` to have the program calculate and print how fast it's processing the training data, but note that this slows down the training step quite a bit. You get more accurate measurements by having something out-of-band, like `pv` or `/usr/bin/time` do the timing. 
 
 You can also define `MARKOV_PARALLEL` to enable experimental parallel processing support when training `markov_model`. This is useful for larger corpuses (over 2000 unique words or so, always benchmark and compare to be sure). This requires a compiler and library with C++ 17 support, specifically the `<execution>` header.
