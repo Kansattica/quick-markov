@@ -68,10 +68,7 @@ class markov_model
 			while (next_index != end_output)
 			{
 				indexes.push_back(next_index);
-				const auto& next_words = following_weights[next_index];
-				if (next_words.empty())
-					break;
-				next_index = random_sample(next_words);
+				next_index = random_sample(following_weights[next_index]);
 			}
 
 			return std::accumulate(std::next(indexes.begin()), indexes.end(), known_words[indexes.front()], [this](std::string& acc, word_index_t curr) { return acc.append(1, ' ').append(known_words[curr]); });
