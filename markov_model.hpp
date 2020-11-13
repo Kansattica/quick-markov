@@ -133,7 +133,6 @@ class markov_model
 			std::vector<word_index_t> word_indexes;
 			word_indexes.reserve(words.size());
 
-			bool first = true;
 			for (auto&& word : words)
 			{
 				auto word_index = index_of(word);
@@ -144,14 +143,10 @@ class markov_model
 					following_weights.push_back({});
 				}
 				word_indexes.push_back(word_index);
-				if (first)
-				{
-					add_or_increment_index(starting_words, word_index);
-					first = false;
-				}
 			}
 			words.clear();
 
+			add_or_increment_index(starting_words, word_indexes.front());
 			return word_indexes;
 		}
 
