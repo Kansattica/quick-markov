@@ -51,7 +51,7 @@ class markov_model
 			// It's not worth parallelizing this because:
 			// - word_indexes is unlikely to be long enough to get any speedup 
 			// - if the same word is in the sentence twice, that creates a race condition on the following_weights for that index.
-			const auto last = std::accumulate(word_indexes.begin() + 1, word_indexes.end(), word_indexes.front(), [this](word_index_t curr, word_index_t next)
+			const auto last = std::accumulate(std::next(word_indexes.begin()), word_indexes.end(), word_indexes.front(), [this](word_index_t curr, word_index_t next)
 			{
 				add_or_increment_index(following_weights[curr], next);
 				return next;
@@ -126,7 +126,7 @@ class markov_model
 				follow_weight.push_back(word_weight{word_index, 1});
 		}
 
-		std::vector<word_index_t> indexify(std::vector<std::string> &words)
+		std::vector<word_index_t> indexify(std::vector<std::string>& words)
 		{
 			std::vector<word_index_t> word_indexes(words.size());
 
