@@ -47,12 +47,12 @@ int main(int argc, char** argv)
 #endif
 	for (std::string buffer; std::getline(std::cin, buffer);)
 	{
-		auto word_start = std::find_if_not(buffer.begin(), buffer.end(), is_word_boundary);
+		auto word_start = std::find_if_not(buffer.cbegin(), buffer.cend(), is_word_boundary);
 		while (word_start != buffer.end())
 		{
-			const auto word_end = std::find_if(word_start, buffer.end(), is_word_boundary);
+			const auto word_end = std::find_if(word_start, buffer.cend(), is_word_boundary);
 			words.emplace_back(word_start, word_end);
-			word_start = std::find_if_not(word_end, buffer.end(), is_word_boundary);
+			word_start = std::find_if_not(word_end, buffer.cend(), is_word_boundary);
 		} 
 		model.train(words);
 #ifdef MARKOV_TIMING

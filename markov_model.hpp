@@ -51,7 +51,7 @@ class markov_model
 			// It's not worth parallelizing this because:
 			// - word_indexes is unlikely to be long enough to get any speedup 
 			// - if the same word is in the sentence twice, that creates a race condition on the following_weights for that index.
-			const auto last = std::accumulate(std::next(word_indexes.begin()), word_indexes.end(), word_indexes.front(), [this](word_index_t curr, word_index_t next)
+			const auto last = std::accumulate(std::next(word_indexes.cbegin()), word_indexes.cend(), word_indexes.front(), [this](word_index_t curr, word_index_t next)
 			{
 				add_or_increment_index(following_weights[curr], next);
 				return next;
@@ -71,7 +71,7 @@ class markov_model
 				next_index = random_sample(following_weights[next_index]);
 			}
 
-			return std::accumulate(std::next(indexes.begin()), indexes.end(), known_words[indexes.front()], [this](std::string& acc, word_index_t curr) { return acc.append(1, ' ').append(known_words[curr]); });
+			return std::accumulate(std::next(indexes.cbegin()), indexes.cend(), known_words[indexes.front()], [this](std::string& acc, word_index_t curr) { return acc.append(1, ' ').append(known_words[curr]); });
 		}
 
 	private:
@@ -97,7 +97,7 @@ class markov_model
 #ifdef MARKOV_PARALLEL
 			const auto total_weight = std::transform_reduce(MARKOV_PARALLEL_POLICY vec.cbegin(), vec.cend(), (uint_fast32_t)0, std::plus<>{}, [](const word_weight& weight) { return weight.count; });
 #else
-			const auto total_weight = std::accumulate(vec.begin(), vec.end(), 0, [](const auto acc, const auto& current) { return acc + current.count; });
+			const auto total_weight = std::accumulate(vec.cbegin(), vec.cend(), 0, [](const auto acc, const auto& current) { return acc + current.count; });
 #endif
 
 			std::uniform_int_distribution<> range(1, total_weight);
@@ -120,7 +120,7 @@ class markov_model
 				return weight.word_index == word_index;
 			});
 
-			if (found != follow_weight.end())
+			if (found != follow_weight.cend())
 				found->count++;
 			else
 				follow_weight.push_back(word_weight{word_index, 1});
@@ -152,9 +152,9 @@ class markov_model
 
 		word_index_t index_of(const std::string& word)
 		{
-			const auto word_it = std::find(MARKOV_PARALLEL_POLICY known_words.begin(), known_words.end(), word);
+			const auto word_it = std::find(MARKOV_PARALLEL_POLICY known_words.cbegin(), known_words.cend(), word);
 
-			return word_it == known_words.end() ? -1 : std::distance(known_words.begin(), word_it);
+			return word_it == known_words.cend() ? -1 : std::distance(known_words.cbegin(), word_it);
 		}
 };
 
