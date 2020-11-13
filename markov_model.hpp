@@ -32,10 +32,8 @@
 #ifdef MARKOV_PARALLEL
 #include <execution>
 #include <functional>
-#define REDUCE std::reduce
 #define MARKOV_PARALLEL_POLICY std::execution::par_unseq,
 #else
-#define REDUCE std::accumulate
 #define MARKOV_PARALLEL_POLICY
 #endif MARKOV_PARALLEL
 
@@ -49,12 +47,16 @@ class markov_model
 		{
 			if (words.empty()) { return; }
 			const auto word_indexes = indexify(words);
-			std::accumulate(word_indexes.begin() + 1, word_indexes.end(), word_indexes.front(), [this](word_index_t curr, word_index_t next)
+
+			// It's not worth parallelizing this because:
+			// - word_indexes is unlikely to be long enough to get any speedup 
+			// - if the same word is in the sentence twice, that creates a race condition on the following_weights for that index.
+			const auto last = std::accumulate(word_indexes.begin() + 1, word_indexes.end(), word_indexes.front(), [this](word_index_t curr, word_index_t next)
 			{
 				add_or_increment_index(following_weights[curr], next);
 				return next;
 			});
-			add_or_increment_index(following_weights[word_indexes.back()], end_output);
+			add_or_increment_index(following_weights[last], end_output);
 		}
 
 		std::string generate()
@@ -117,10 +119,9 @@ class markov_model
 
 		void add_or_increment_index(std::vector<word_weight>& follow_weight, word_index_t word_index)
 		{
-			const auto found = std::find_if(MARKOV_PARALLEL_POLICY follow_weight.begin(), follow_weight.end(), [word_index](const auto& weight)
-					{
-					return weight.word_index == word_index;
-					});
+			const auto found = std::find_if(MARKOV_PARALLEL_POLICY follow_weight.begin(), follow_weight.end(), [word_index](const auto &weight) {
+				return weight.word_index == word_index;
+			});
 
 			if (found != follow_weight.end())
 				found->count++;
@@ -128,10 +129,12 @@ class markov_model
 				follow_weight.push_back(word_weight{word_index, 1});
 		}
 
-		std::vector<word_index_t> indexify(std::vector<std::string>& words)
+		std::vector<word_index_t> indexify(std::vector<std::string> &words)
 		{
 			std::vector<word_index_t> word_indexes(words.size());
 
+			// Paralellizing this one looks like it gives worse performance.
+			// I suspect it's because words is rarely very long, and there's contention on the reader-writer lock you have to put on known_words.
 			std::transform(words.begin(), words.end(), word_indexes.begin(),
 				[this](std::string& word) {
 					auto word_index = index_of(word);
@@ -154,12 +157,8 @@ class markov_model
 		{
 			const auto word_it = std::find(MARKOV_PARALLEL_POLICY known_words.begin(), known_words.end(), word);
 
-			if (word_it != known_words.end())
-				return std::distance(known_words.begin(), word_it);
-
-			return -1;
+			return word_it == known_words.end() ? -1 : std::distance(known_words.begin(), word_it);
 		}
-
 };
 
 #endif
