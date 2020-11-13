@@ -43,7 +43,8 @@ class markov_model
 
 	public:
 
-		void train(std::vector<std::string>& words)
+		template <typename stringlike>
+		void train(std::vector<stringlike>& words)
 		{
 			if (words.empty()) { return; }
 			const auto word_indexes = indexify(words);
@@ -130,31 +131,35 @@ class markov_model
 				follow_weight.push_back(word_weight{word_index, 1});
 		}
 
-		std::vector<word_index_t> indexify(std::vector<std::string>& words)
+		template <typename stringlike>
+		std::vector<word_index_t> indexify(std::vector<stringlike>& words)
 		{
 			std::vector<word_index_t> word_indexes(words.size());
 
 			// Paralellizing this one looks like it gives worse performance.
 			// I suspect it's because words is rarely very long, and there's contention on the reader-writer lock you have to put on known_words.
 			std::transform(words.begin(), words.end(), word_indexes.begin(),
-				[this](std::string& word) {
+				[this](stringlike& word) {
 					auto word_index = index_of(word);
 					if (word_index == -1)
 					{
-						known_words.push_back(std::move(word));
+						known_words.emplace_back(std::move(word));
 						word_index = known_words.size() - 1;
 						following_weights.push_back({});
 					}
 					return word_index;
 				});
 
+#ifndef MARKOV_NO_GOBBLE_VECTOR
 			words.clear();
+#endif
 
 			add_or_increment_index(starting_words, word_indexes.front());
 			return word_indexes;
 		}
 
-		word_index_t index_of(const std::string& word) const
+		template <typename stringlike>
+		word_index_t index_of(const stringlike& word) const
 		{
 			const auto word_it = std::find(MARKOV_PARALLEL_POLICY known_words.cbegin(), known_words.cend(), word);
 			return word_it == known_words.cend() ? -1 : std::distance(known_words.cbegin(), word_it);

@@ -13,7 +13,7 @@ By default, it produces one line of output. Passing a number as a command line a
 
 You can also use `markov_model.hpp` in your own projects. It's a class, `markov_model`, that exposes two functions: `train` and `generate`. 
 
-`train` takes a `std::vector<std::string>` and adds it to the model. Note that `train` `std::move`s from the strings and clears the vector to conserve memory. Each call to `train` is treated as one message. This is important because the first word is marked as a reasonable word to start a generated message on, and the last word is treated as a reasonable word to end a message on. 
+`train` takes a `std::vector<stringlike>` and adds it to the model. Note that `train` `std::move`s from the strings and clears the vector to conserve memory. If you would like the vector to be preserved, `#define MARKOV_NO_GOBBLE_VECTOR` before including `markov_model.hpp`, but note that `train` will still attempt to `std::move` from whatever it's given. Each call to `train` is treated as one message. This is important because the first word is marked as a reasonable word to start a generated message on, and the last word is treated as a reasonable word to end a message on. A `stringlike` is anything that can be used to construct a `std::string` and compared to a `std::string` using `operator==`. Notably, this includes `std::string_view`. 
 
 `generate` uses the trained model to produce a `std::string`. Note that you can freely intermix calls to `train` and `generate`- there's no intermediate step to "finalize" a model. If you'd like to prevent your model from being trained after a certain point, a `const markov_model` can `generate`, but not `train`. 
 
