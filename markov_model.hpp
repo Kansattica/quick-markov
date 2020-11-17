@@ -83,14 +83,13 @@ class markov_model
 
 		using count_t = uint_fast32_t;
 		using word_index_t = size_t;
+		static const word_index_t end_output = -1;
 
 		struct word_weight
 		{
 			word_index_t word_index;
 			count_t count;
 		};
-
-		const word_index_t end_output = -1;
 
 		std::vector<std::string> known_words;
 		std::vector<word_weight> starting_words;
