@@ -61,7 +61,7 @@ class markov_model
 				add_or_increment_index(following_weights[curr], next);
 				return next;
 			});
-			add_or_increment_index(following_weights[last], end_output);
+			add_or_increment_index(following_weights[last], END_OUTPUT);
 		}
 
 		std::string generate() const
@@ -70,7 +70,7 @@ class markov_model
 
 			std::vector<word_index_t> indexes;
 
-			while (next_index != end_output)
+			while (next_index != END_OUTPUT)
 			{
 				indexes.push_back(next_index);
 				next_index = random_sample(following_weights[next_index]);
@@ -83,7 +83,7 @@ class markov_model
 
 		using count_t = uint_fast32_t;
 		using word_index_t = size_t;
-		static const word_index_t end_output = -1;
+		static const word_index_t END_OUTPUT = -1;
 
 		struct word_weight
 		{
