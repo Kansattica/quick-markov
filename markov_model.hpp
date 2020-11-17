@@ -45,8 +45,6 @@
 
 class markov_model
 {
-	using word_index_t = size_t;
-
 	public:
 
 		template <typename stringlike_iterator>
@@ -84,6 +82,8 @@ class markov_model
 	private:
 
 		using count_t = uint_fast32_t;
+		using word_index_t = size_t;
+
 		struct word_weight
 		{
 			word_index_t word_index;
