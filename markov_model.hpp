@@ -167,6 +167,9 @@ class markov_model
 		template <typename stringlike>
 		word_index_t index_of(const stringlike& word) const
 		{
+			// i believe this, in addition to waiting for vectors to grow, is the bottleneck for training with large corpuses
+			// a hash table mapping stringlikes to their indexes would probably speed this up
+			// if the problem is resizing vectors, then a deque might fix things at the expense of access time
 			const auto word_it = std::find(MARKOV_PARALLEL_POLICY known_words.cbegin(), known_words.cend(), word);
 			return word_it == known_words.cend() ? -1 : std::distance(known_words.cbegin(), word_it);
 		}
