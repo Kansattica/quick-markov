@@ -31,6 +31,13 @@
 
 #include "markov_model.hpp"
 
+#ifdef NOVEL_OUTPUT
+#include <set>
+
+std::set<std::string> input_lines;
+#endif
+
+
 bool is_word_boundary(char c)
 {
 	// see https://en.cppreference.com/w/cpp/string/byte/isspace
@@ -56,6 +63,9 @@ markov_model train_model()
 		} 
 		model.train(std::make_move_iterator(words.begin()), std::make_move_iterator(words.end()));
 		words.clear();
+#ifdef NOVEL_OUTPUT
+		input_lines.insert(buffer);
+#endif
 #ifdef MARKOV_TIMING
 		bytes_crunched += buffer.size();
 		const auto end = std::chrono::high_resolution_clock::now();
@@ -79,6 +89,11 @@ int main(int argc, char** argv)
 
 	for (int i = 0; i < to_generate; i++)
 	{
-		std::cout << model.generate() << '\n';
+		auto output = model.generate();
+#ifdef NOVEL_OUTPUT
+		while (input_lines.count(output) == 1)
+			output = model.generate();
+#endif
+		std::cout << output << '\n';
 	}
 }
