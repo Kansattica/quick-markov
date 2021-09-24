@@ -32,9 +32,9 @@
 #include "markov_model.hpp"
 
 #ifdef NOVEL_OUTPUT
-#include <set>
+#include <unordered_set>
 
-std::set<std::string> input_lines;
+std::unordered_set<std::string> input_lines;
 #endif
 
 
