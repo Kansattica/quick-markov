@@ -58,7 +58,13 @@ markov_model train_model()
 		while (word_start != buffer.end())
 		{
 			const auto word_end = std::find_if(word_start, buffer.cend(), is_word_boundary);
-			words.emplace_back(word_start, word_end);
+			// basically, capture the space after the word, if there is one
+			// this means that the model will accurately use tabs, newlines, zero-width spaces, etc. in addition to regular old spaces
+			// note that newlines won't show up in the output by default because this program assumes a newline terminates a statement
+			// this behavior can be changed by passing a third parameter to std::getline
+			// if you do use something other than a newline to terminate statements, note that output is, by default, also newline-separated.
+			// also note that markov_model relies on this behavior- if you want it to automatically insert spaces, see the comment inside markov_model::generate
+			words.emplace_back(word_start, word_end + (word_end != buffer.end()));
 			word_start = std::find_if_not(word_end, buffer.cend(), is_word_boundary);
 		} 
 		model.train(std::make_move_iterator(words.begin()), std::make_move_iterator(words.end()));

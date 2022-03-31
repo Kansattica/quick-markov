@@ -76,7 +76,9 @@ class markov_model
 				next_index = random_sample(following_weights[next_index]);
 			}
 
-			return std::accumulate(std::next(indexes.cbegin()), indexes.cend(), known_words[indexes.front()], [this](std::string& acc, word_index_t curr) { return acc.append(1, ' ').append(known_words[curr]); });
+			// note that this assumes that each word being appended is followed by whatever word separator is appropriate (usually a space). if you would like markov_model to provide word separators,
+			// replace return acc.append(known_words[curr]); with something like return acc.append(1, ' ').append(known_words[curr]);
+			return std::accumulate(std::next(indexes.cbegin()), indexes.cend(), known_words[indexes.front()], [this](std::string& acc, word_index_t curr) { return acc.append(known_words[curr]); });
 		}
 
 	private:
