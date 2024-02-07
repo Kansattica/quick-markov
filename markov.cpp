@@ -38,13 +38,13 @@ std::unordered_set<std::string> input_lines;
 #endif
 
 
-bool is_word_boundary(char c)
+static bool is_word_boundary(char c)
 {
 	// see https://en.cppreference.com/w/cpp/string/byte/isspace
 	return std::isspace(static_cast<unsigned char>(c));
 }
 
-markov_model train_model()
+static markov_model train_model()
 {
 	std::vector<std::string> words;
 	markov_model model;
