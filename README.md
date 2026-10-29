@@ -16,6 +16,8 @@ You can define `MARKOV_TIMING` (compile with `-DMARKOV_TIMING` or add `#define M
 
 Similarly, you can define `NOVEL_OUTPUT` to ensure that the runner doesn't produce output that's in the input corpus. It does this by maintaining a std::set of all the input lines and generating output again if anything matches. This slows down training (because it has to insert each line into a data structure), increases memory usage (because it has to maintain a copy of the input corpus in memory), and can slow down output on small or highly repetitive input corpuses, but it also guarantees that the program is generating novel output. This method works best on relatively clean input data. It will be fooled by, for example, multiple spaces in a row or whitespace at the beginning or end of an input string. Plans for future work include a more memory-efficient and data-tolerant implementation inside `markov_model` itself.
 
+In addition to `NOVEL_OUTPUT`, defining `NO_SUBSETS` will ensure no output is a strict subset of the input. This is to prevent a situation where the model simply returns input lines with a few words missing from the beginning or end. `NO_SUBSETS` must be defined alongside `NOVEL_OUTPUT` to have any effect, requires C++23 features (for `std::string.contains()`) and slows down output because every output line has to be checked against every input line. By default, it only checks if the output is a subset of the input, but there's a commented-out line that checks for both directions (if you're worried about, say, the model just appending "the" to the start and calling it a day).
+
 ## Using `markov_model`
 You can also use `markov_model.hpp` in your own projects. It's a class, `markov_model`, that exposes two functions: `train` and `generate`. 
 

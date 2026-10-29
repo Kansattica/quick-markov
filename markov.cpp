@@ -33,8 +33,21 @@
 
 #ifdef NOVEL_OUTPUT
 #include <unordered_set>
+#include <utility>
 
 std::unordered_set<std::string> input_lines;
+
+
+bool subset_in_training_data(const std::string& needle)
+{
+#ifdef NO_SUBSETS
+	return std::any_of(input_lines.cbegin(), input_lines.cend(), [&need = std::as_const(needle)](const auto& x) { return x.contains(need); });
+	//return std::any_of(input_lines.cbegin(), input_lines.cend(), [&need = std::as_const(needle)](const auto& x) { return x.contains(need) || need.contains(x); });
+#endif
+	return false;
+
+}
+
 #endif
 
 
@@ -97,7 +110,7 @@ int main(int argc, char** argv)
 	{
 		auto output = model.generate();
 #ifdef NOVEL_OUTPUT
-		while (input_lines.count(output) == 1)
+		while (input_lines.count(output) == 1 || subset_in_training_data(output))
 			output = model.generate();
 #endif
 		std::cout << output << '\n';
